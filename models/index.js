@@ -27,7 +27,11 @@ db.actorMovie = require("./actorMovie")(sequelize, DataTypes)
 db.customer = require("./customer")(sequelize, DataTypes)
 db.profile = require("./profile")(sequelize, DataTypes)
 db.customerProfile = require("./customerProfile")(sequelize, DataTypes)
-
+db.game = require("./game")(sequelize, DataTypes)
+db.team = require("./team")(sequelize, DataTypes)
+db.player = require("./player")(sequelize, DataTypes)
+db.gameTeam = require("./gameTeam")(sequelize, DataTypes)
+db.playerGameTeam = require("./playerGameTeam")(sequelize, DataTypes)
 
 
 db.user.hasOne(db.contact, { foreignKey: 'user_id', as: 'contact_details' })
@@ -41,6 +45,21 @@ db.profile.belongsToMany(db.customer, { through: db.customerProfile });
 
 db.movie.belongsToMany(db.actor, { through: db.actorMovie });
 db.actor.belongsToMany(db.movie, { through: db.actorMovie });
+
+
+db.team.belongsToMany(db.game, { through: db.gameTeam });
+db.game.belongsToMany(db.team, { through: db.gameTeam });
+db.gameTeam.belongsTo(db.game);
+db.gameTeam.belongsTo(db.team);
+db.game.hasMany(db.gameTeam);
+db.team.hasMany(db.gameTeam);
+
+db.player.belongsToMany(db.gameTeam, { through: db.playerGameTeam });
+db.gameTeam.belongsToMany(db.player, { through: db.playerGameTeam });
+db.playerGameTeam.belongsTo(db.player);
+db.playerGameTeam.belongsTo(db.gameTeam);
+db.player.hasMany(db.playerGameTeam);
+db.gameTeam.hasMany(db.playerGameTeam);
 
 db.sequelize.sync({ force: false })
 
