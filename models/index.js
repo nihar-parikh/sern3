@@ -24,6 +24,10 @@ db.hobbies = require("./hobbies")(sequelize, DataTypes)
 db.actor = require("./actor")(sequelize, DataTypes)
 db.movie = require("./movie")(sequelize, DataTypes)
 db.actorMovie = require("./actorMovie")(sequelize, DataTypes)
+db.customer = require("./customer")(sequelize, DataTypes)
+db.profile = require("./profile")(sequelize, DataTypes)
+db.customerProfile = require("./customerProfile")(sequelize, DataTypes)
+
 
 
 db.user.hasOne(db.contact, { foreignKey: 'user_id', as: 'contact_details' })
@@ -32,9 +36,11 @@ db.contact.belongsTo(db.user, { foreignKey: 'user_id' })
 db.user.hasMany(db.hobbies, { foreignKey: 'user_id', as: 'hobbies' })
 db.hobbies.belongsTo(db.user, { foreignKey: 'user_id', as: 'user_details' })
 
+db.customer.belongsToMany(db.profile, { through: db.customerProfile });
+db.profile.belongsToMany(db.customer, { through: db.customerProfile });
 
-db.movie.belongsToMany(db.actor, { through: 'actor_movies' });
-db.actor.belongsToMany(db.movie, { through: 'actor_movies' });
+db.movie.belongsToMany(db.actor, { through: db.actorMovie });
+db.actor.belongsToMany(db.movie, { through: db.actorMovie });
 
 db.sequelize.sync({ force: false })
 

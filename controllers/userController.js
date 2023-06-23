@@ -84,29 +84,70 @@ const getAllUsers = async (req, res) => {
     //     }
     // })
 
+
+    //********DEFAULT INNER JOIN******************//
+    // const { count, rows: users } = await User.findAndCountAll({
+    //     order: [['createdAt', 'DESC']], // Order by createdAt in descending order
+    //     attributes: {
+    //         exclude: ['createdAt', 'updatedAt']
+    //     },
+    //     include: [{
+    //         model: Contact,
+    //         as: 'contact_details',
+    //         required: true,
+    //         attributes: {
+    //             exclude: "user_id"
+    //         }
+    //     },
+    //     {
+    //         model: Hobbies,
+    //         as: 'hobbies',
+    //         required: true,
+    //         attributes: {
+    //             exclude: "user_id"
+    //         }
+    //     }
+    //     ]
+    // });
+
+
+    //********RIGHT OUTER JOIN*************//
+    // const { count, rows: users } = await User.findAndCountAll({
+    //     order: [['createdAt', 'DESC']], // Order by createdAt in descending order
+    //     attributes: {
+    //         exclude: ['createdAt', 'updatedAt']
+    //     },
+    //     include: [{
+    //         model: Contact,
+    //         as: 'contact_details',
+    //         required: false,
+    //         right: true,
+    //         attributes: {
+    //             exclude: "user_id"
+    //         }
+    //     },
+    //     {
+    //         model: Hobbies,
+    //         as: 'hobbies',
+    //         required: false,
+    //         right: true,
+    //         attributes: {
+    //             exclude: "user_id"
+    //         }
+    //     }
+    //     ]
+    // });
+
+
+    //*************ALL INNER JOINS***************//
     const { count, rows: users } = await User.findAndCountAll({
         order: [['createdAt', 'DESC']], // Order by createdAt in descending order
         attributes: {
             exclude: ['createdAt', 'updatedAt']
         },
-        include: [{
-            model: Contact,
-            as: 'contact_details',
-            required: true,
-            attributes: {
-                exclude: "user_id"
-            }
-        },
-        {
-            model: Hobbies,
-            as: 'hobbies',
-            required: true,
-            attributes: {
-                exclude: "user_id"
-            }
-        }
-        ]
+        include: { all: true, nested: true }
     });
+
     res.status(200).json({ count, users })
 }
 
