@@ -154,31 +154,34 @@ const assignMovieToActor = async (req, res) => {
 
 }
 
-// const getUserHobbies = async (req, res) => {
-//     const { userId } = req.body;
-//     try {
-//         const hobbies = await Hobbies.findAll({
-//             where: {
-//                 user_id: userId,
-//             },
-//             include: [
-//                 {
-//                     model: User,
-//                     as: "user_details"
-//                 },
-//             ],
-//         });
+const getActorDetails = async (req, res) => {
+    const { actor_id, } = req.body
 
-//         res.status(200).json(hobbies);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ message: 'Error retrieving user hobbies.' });
-//     }
-// };
+    //Association scopes ->useful for resusable logic
+    Actor.addScope('checkActor', {
+        where: {
+            id: actor_id
+        }
+    })
+
+    Actor.addScope('includeMovie', {
+        include: [
+            {
+                model: Movie,
+            }
+        ],
+    })
+
+    const existingActor = await Actor.scope(['checkActor', 'includeMovie']).findOne()
+
+    return res.status(200).json({ existingActor })
+
+}
 
 
 module.exports = {
     createActor,
-    assignMovieToActor
+    assignMovieToActor,
+    getActorDetails
 
 }

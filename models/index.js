@@ -32,6 +32,9 @@ db.team = require("./team")(sequelize, DataTypes)
 db.player = require("./player")(sequelize, DataTypes)
 db.gameTeam = require("./gameTeam")(sequelize, DataTypes)
 db.playerGameTeam = require("./playerGameTeam")(sequelize, DataTypes)
+db.image = require("./image")(sequelize, DataTypes)
+db.video = require("./video")(sequelize, DataTypes)
+db.comment = require("./comment")(sequelize, DataTypes)
 
 
 db.user.hasOne(db.contact, { foreignKey: 'user_id', as: 'contact_details' })
@@ -60,6 +63,42 @@ db.playerGameTeam.belongsTo(db.player);
 db.playerGameTeam.belongsTo(db.gameTeam);
 db.player.hasMany(db.playerGameTeam);
 db.gameTeam.hasMany(db.playerGameTeam);
+
+
+db.image.hasMany(db.comment,
+    {
+        foreignKey: 'commentableId',
+        constraints: false,
+        scope: {
+            commentableType: 'image'
+        }
+    }
+);
+
+db.comment.belongsTo(db.image,
+    {
+        foreignKey: 'commentableId',
+        constraints: false
+    }
+);
+
+db.video.hasMany(db.comment,
+    {
+        foreignKey: 'commentableId',
+        constraints: false,
+        scope: {
+            commentableType: 'video'
+        }
+    }
+);
+
+db.comment.belongsTo(db.video,
+    {
+        foreignKey: 'commentableId',
+        constraints: false
+    }
+);
+
 
 db.sequelize.sync({ force: false })
 

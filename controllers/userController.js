@@ -4,6 +4,7 @@ const db = require("../models")
 const User = db.user
 const Contact = db.contact
 const Hobbies = db.hobbies
+const sequelize = db.sequelize
 
 // const addUser = async (req, res) => {
 //     const { first_name, last_name, email } = req.body
@@ -30,50 +31,113 @@ const Hobbies = db.hobbies
 //     return res.status(200).json({ data: data, messages })
 // }
 
+// const addUser = async (req, res) => {
+//     const { first_name, last_name, email, permanent_address, current_address } = req.body;
+//     const messages = {};
+//     let data = {};
+//     try {
+//         const [newUser, created] = await User.findOrCreate({
+//             where: { email },
+//             defaults: { first_name, last_name, email },
+//         });
+
+//         if (!created) {
+//             // User already exists
+//             messages['error'] = 'User already exists!';
+//         } else {
+//             // User was created successfully
+//             data = newUser;
+//             const userContact = await Contact.create({
+//                 user_id: data.id,
+//                 permanent_address,
+//                 current_address
+//             })
+//         }
+//     } catch (error) {
+//         switch (error.name) {
+//             case 'SequelizeUniqueConstraintError':
+//                 // Handle unique constraint violation error
+//                 messages['email'] = 'User already exists!';
+//                 break;
+//             case 'SequelizeValidationError':
+//                 // Handle validation errors
+//                 error.errors.forEach((validationError) => {
+//                     messages[validationError.path] = validationError.message;
+//                 });
+//                 break;
+//             default:
+//                 // Handle other unexpected errors
+//                 console.error(error);
+//                 messages['error'] = 'An unexpected error occurred.';
+//         }
+//     }
+
+//     res.status(200).json({ data, messages });
+
+// };
+
+// const addUser = async (req, res) => {
+//     const { first_name, last_name, email, permanent_address, current_address } = req.body;
+
+//     const t = await sequelize.transaction();
+
+//     try {
+//         const [newUser, created] = await User.findOrCreate({
+//             where: { email },
+//             defaults: { first_name, last_name, email },
+//             transaction: t
+//         });
+
+//         const user_id = newUser.id;
+
+//         await Contact.create({
+//             user_id,
+//             permanent_address,
+//             current_address
+//         }, {
+//             transaction: t
+//         });
+
+//         await t.commit();
+
+//         res.status(200).json({ message: 'User created successfully' });
+//     } catch (err) {
+//         console.error(err);
+//         await t.rollback();
+//         res.status(500).json({ error: 'Failed to create user' });
+//     }
+// };
+
+
 const addUser = async (req, res) => {
     const { first_name, last_name, email, permanent_address, current_address } = req.body;
-    const messages = {};
-    let data = {};
-    try {
-        const [newUser, created] = await User.findOrCreate({
-            where: { email },
-            defaults: { first_name, last_name, email },
-        });
 
-        if (!created) {
-            // User already exists
-            messages['error'] = 'User already exists!';
-        } else {
-            // User was created successfully
-            data = newUser;
-            const userContact = await Contact.create({
-                user_id: data.id,
+    try {
+        const createdUser = await sequelize.transaction(async (t) => {
+            const [newUser] = await User.findOrCreate({
+                where: { email },
+                defaults: { first_name, last_name, email },
+                transaction: t
+            });
+
+            const user_id = newUser.id;
+
+            await Contact.create({
+                user_id,
                 permanent_address,
                 current_address
-            })
-        }
-    } catch (error) {
-        switch (error.name) {
-            case 'SequelizeUniqueConstraintError':
-                // Handle unique constraint violation error
-                messages['email'] = 'User already exists!';
-                break;
-            case 'SequelizeValidationError':
-                // Handle validation errors
-                error.errors.forEach((validationError) => {
-                    messages[validationError.path] = validationError.message;
-                });
-                break;
-            default:
-                // Handle other unexpected errors
-                console.error(error);
-                messages['error'] = 'An unexpected error occurred.';
-        }
+            }, {
+                transaction: t
+            });
+
+            return newUser;
+        });
+        res.status(200).json({ message: 'User created successfully', user: createdUser });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to create user' });
     }
-
-    res.status(200).json({ data, messages });
 };
-
 
 
 const getAllUsers = async (req, res) => {
