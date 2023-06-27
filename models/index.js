@@ -35,6 +35,8 @@ db.playerGameTeam = require("./playerGameTeam")(sequelize, DataTypes)
 db.image = require("./image")(sequelize, DataTypes)
 db.video = require("./video")(sequelize, DataTypes)
 db.comment = require("./comment")(sequelize, DataTypes)
+db.tag = require("./tag")(sequelize, DataTypes)
+db.tagTaggable = require("./tagTaggable")(sequelize, DataTypes)
 
 
 db.user.hasOne(db.contact, { foreignKey: 'user_id', as: 'contact_details' })
@@ -65,11 +67,12 @@ db.player.hasMany(db.playerGameTeam);
 db.gameTeam.hasMany(db.playerGameTeam);
 
 
+//polymorphic associations->one to many
 db.image.hasMany(db.comment,
     {
-        foreignKey: 'commentableId',
-        constraints: false,
-        scope: {
+        foreignKey: 'commentableId',    //necessary otherwise imageId column will be created.
+        constraints: false,            //necessary if two or more foreign keys refers are in same table.
+        scope: {                      //providing scope here eliminates where clause
             commentableType: 'image'
         }
     }
@@ -84,8 +87,8 @@ db.comment.belongsTo(db.image,
 
 db.video.hasMany(db.comment,
     {
-        foreignKey: 'commentableId',
-        constraints: false,
+        foreignKey: 'commentableId',  //necessary otherwise videoId column will be created.
+        constraints: false,           //necessary if two or more foreign keys refers are in same table.   
         scope: {
             commentableType: 'video'
         }
@@ -98,6 +101,47 @@ db.comment.belongsTo(db.video,
         constraints: false
     }
 );
+
+
+db.image.belongsToMany(db.tag, {
+    through: {
+        model: db.tagTaggable,
+        unique: false,
+        scope: {
+            taggableType: 'image'
+        }
+    },
+    foreignKey: 'taggableId',
+    constraints: false
+});
+db.tag.belongsToMany(db.image, {
+    through: {
+        model: db.tagTaggable,
+        unique: false
+    },
+    foreignKey: 'tagId',
+    constraints: false
+});
+
+db.video.belongsToMany(db.tag, {
+    through: {
+        model: db.tagTaggable,
+        unique: false,
+        scope: {
+            taggableType: 'video'
+        }
+    },
+    foreignKey: 'taggableId',
+    constraints: false
+});
+db.tag.belongsToMany(db.video, {
+    through: {
+        model: db.tagTaggable,
+        unique: false
+    },
+    foreignKey: 'tagId',
+    constraints: false
+});
 
 
 db.sequelize.sync({ force: false })

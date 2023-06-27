@@ -9,6 +9,7 @@ const playerController = require("./controllers/playerController")
 const imageController = require("./controllers/imageController")
 const videoController = require("./controllers/videoController")
 const commentController = require("./controllers/commentController")
+const tagController = require("./controllers/tagController")
 
 const app = express()
 
@@ -48,7 +49,10 @@ app.get('/api/v1/video/all', videoController.getAllVideos)
 
 
 app.post('/api/v1/comment/add', commentController.addComment)
+app.get('/api/v1/comment/all', commentController.getAllComments)
 
+app.post('/api/v1/tag/add', tagController.addTag)
+app.get('/api/v1/tag/all', tagController.getAllTags)
 
 
 app.listen(port, () => {
